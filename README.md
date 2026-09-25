@@ -141,3 +141,15 @@ rapidfix-lead-automation/
 
 ### Audit Log
 ![Audit Log](screenshots/audit-log.png)
+
+## Demo Flow
+
+1. Lead submits Website or Google Form
+2. Lead is normalized into a canonical format
+3. Duplicate submissions are blocked
+4. Lead is scored and classified
+5. Routing rules assign the correct dispatch queue
+6. HubSpot contact is created or updated
+7. Customer receives confirmation email
+8. Priority leads trigger Slack alerts
+9. Processing result is written to Google Sheets

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>RapidFix Service Request</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      color: #1f2937;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      padding: 30px 15px;
+    }
+
+    .page-wrapper {
+      width: 100%;
+      max-width: 760px;
+    }
+
+    .brand {
+      text-align: center;
+      margin-bottom: 20px;
+      color: white;
+    }
+
+    .brand-name {
+      font-size: 38px;
+      font-weight: 800;
+      margin-bottom: 5px;
+    }
+
+    .brand-tagline {
+      color: #cbd5e1;
+      font-size: 15px;
+    }
+
+    .form-container {
+      width: 100%;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 36px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .form-header h1 {
+      margin: 0 0 8px;
+      color: #0f172a;
+      font-size: 30px;
+    }
+
+    .form-header p {
+      margin: 0;
+      color: #64748b;
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    #leadForm {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+
+      background: #f8fafc;
+      color: #0f172a;
+
+      font-size: 15px;
+      font-family: inherit;
+
+      outline: none;
+      transition: 0.2s ease;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #94a3b8;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #2563eb;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    textarea {
+      min-height: 125px;
+      resize: vertical;
+    }
+
+    .submit-button {
+      grid-column: 1 / -1;
+
+      border: none;
+      border-radius: 10px;
+
+      padding: 15px;
+
+      background: #2563eb;
+      color: white;
+
+      font-size: 16px;
+      font-weight: 700;
+
+      cursor: pointer;
+
+      transition: 0.2s ease;
+    }
+
+    .submit-button:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+
+    .submit-button:active {
+      transform: translateY(0);
+    }
+
+    .submit-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    #result {
+      grid-column: 1 / -1;
+
+      margin: 0;
+      min-height: 22px;
+
+      text-align: center;
+
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .success {
+      color: #15803d;
+    }
+
+    .error {
+      color: #dc2626;
+    }
+
+    .footer {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 13px;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 650px) {
+      body {
+        align-items: flex-start;
+      }
+
+      .form-container {
+        padding: 25px 18px;
+      }
+
+      #leadForm {
+        grid-template-columns: 1fr;
+      }
+
+      .full-width,
+      .submit-button,
+      #result {
+        grid-column: auto;
+      }
+
+      .brand-name {
+        font-size: 30px;
+      }
+
+      .form-header h1 {
+        font-size: 25px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="page-wrapper">
+
+    <div class="brand">
+      <div class="brand-name">
+        RapidFix
+      </div>
+
+      <div class="brand-tagline">
+        HVAC & Plumbing Services
+      </div>
+    </div>
+
+    <div class="form-container">
+
+      <div class="form-header">
+        <h1>Request a Service</h1>
+
+        <p>
+          Tell us what you need and our team will review your request
+          and contact you shortly.
+        </p>
+      </div>
+
+      <form id="leadForm">
+
+        <div class="form-group">
+          <label for="name">
+            Customer Name
+          </label>
+
+          <input
+            id="name"
+            type="text"
+            placeholder="John Smith"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="phone">
+            Phone
+          </label>
+
+          <input
+            id="phone"
+            type="tel"
+            placeholder="+1 617 555 0100"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="email">
+            Email
+          </label>
+
+          <input
+            id="email"
+            type="email"
+            placeholder="john@example.com"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="area">
+            Area
+          </label>
+
+          <input
+            id="area"
+            type="text"
+            placeholder="Boston"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="serviceType">
+            Service Type
+          </label>
+
+          <select
+            id="serviceType"
+            required
+          >
+            <option value="">
+              Select a service
+            </option>
+
+            <option value="hvac_install">
+              HVAC Installation
+            </option>
+
+            <option value="hvac_repair">
+              HVAC Repair
+            </option>
+
+            <option value="major_plumbing">
+              Major Plumbing
+            </option>
+
+            <option value="maintenance">
+              Maintenance
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="urgency">
+            Urgency
+          </label>
+
+          <select
+            id="urgency"
+            required
+          >
+            <option value="">
+              Select urgency
+            </option>
+
+            <option value="emergency">
+              Emergency
+            </option>
+
+            <option value="same_day">
+              Same Day
+            </option>
+
+            <option value="within_48h">
+              Within 48 Hours
+            </option>
+
+            <option value="quote_only">
+              Quote Only
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="propertyType">
+            Property Type
+          </label>
+
+          <select
+            id="propertyType"
+            required
+          >
+            <option value="">
+              Select property type
+            </option>
+
+            <option value="residential">
+              Residential
+            </option>
+
+            <option value="commercial">
+              Commercial
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="message">
+            Problem Description
+          </label>
+
+          <textarea
+            id="message"
+            placeholder="Describe the issue or service you need..."
+            required
+          ></textarea>
+        </div>
+
+        <button
+          id="submitButton"
+          class="submit-button"
+          type="submit"
+        >
+          Submit Service Request
+        </button>
+
+        <p id="result"></p>
+
+      </form>
+    </div>
+
+    <div class="footer">
+      RapidFix Service Automation Demo
+    </div>
+
+  </div>
+
+  <script>
+    const form = document.getElementById("leadForm");
+    const result = document.getElementById("result");
+    const submitButton = document.getElementById("submitButton");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      result.textContent = "";
+      result.className = "";
+
+      submitButton.disabled = true;
+      submitButton.textContent = "Submitting...";
+
+      const lead = {
+        submissionId: crypto.randomUUID(),
+
+        name:
+          document
+            .getElementById("name")
+            .value
+            .trim(),
+
+        phone:
+          document
+            .getElementById("phone")
+            .value
+            .trim(),
+
+        email:
+          document
+            .getElementById("email")
+            .value
+            .trim(),
+
+        serviceType:
+          document
+            .getElementById("serviceType")
+            .value,
+
+        urgency:
+          document
+            .getElementById("urgency")
+            .value,
+
+        propertyType:
+          document
+            .getElementById("propertyType")
+            .value,
+
+        area:
+          document
+            .getElementById("area")
+            .value
+            .trim(),
+
+        message:
+          document
+            .getElementById("message")
+            .value
+            .trim()
+      };
+
+      try {
+
+        const response = await fetch(
+          "http://localhost:5678/webhook/rapidfix-lead",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(lead)
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            `Request failed with status ${response.status}`
+          );
+        }
+
+        result.textContent =
+          "Your service request was submitted successfully.";
+
+        result.className = "success";
+
+        form.reset();
+
+      } catch (error) {
+
+        console.error(
+          "RapidFix submission error:",
+          error
+        );
+
+        result.textContent =
+          "Something went wrong. Please try again.";
+
+        result.className = "error";
+
+      } finally {
+
+        submitButton.disabled = false;
+
+        submitButton.textContent =
+          "Submit Service Request";
+      }
+    });
+  </script>
+
+</body>
+</html>
