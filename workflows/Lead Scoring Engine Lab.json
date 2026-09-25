@@ -1,0 +1,774 @@
+{
+  "name": "Lead Scoring Engine Lab",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "ZxOBMS1OZkcyrkY7",
+          "mode": "list",
+          "cachedResultName": "scoring_rules",
+          "cachedResultUrl": "/projects/rurF5jkLGoYPPdmg/datatables/ZxOBMS1OZkcyrkY7"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "is_active",
+              "condition": "isTrue"
+            },
+            {
+              "keyName": "version",
+              "keyValue": "v1"
+            }
+          ]
+        },
+        "returnAll": "={{ false }}"
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        0
+      ],
+      "id": "0e67c7a2-e845-47d0-add9-be8b84932b58",
+      "name": "Load Scoring Rules"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rules = $input.all().map(item => item.json);\n\nconst lead = $(\"Receive Canonical Lead\").first().json;\n\nfunction getScore(factor, value) {\n  const rule = rules.find(r =>\n    r.factor === factor &&\n    r.value === value\n  );\n\n  return rule?.score ?? 0;\n}\n\nconst breakdown = {\n  urgency: getScore(\"urgency\", lead.urgency),\n  serviceType: getScore(\"serviceType\", lead.serviceType),\n  propertyType: getScore(\"propertyType\", lead.propertyType),\n  source: getScore(\"source\", lead.source)\n};\n\nconst score = Object.values(breakdown)\n  .reduce((total, value) => total + value, 0);\n\nreturn [\n  {\n    json: {\n      ...lead,\n      score,\n      scoreBreakdown: breakdown\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        0
+      ],
+      "id": "46055808-7d30-4e61-917a-7306115c77df",
+      "name": "Calculate Lead Score"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.score }}",
+                    "rightValue": 80,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gte"
+                    },
+                    "id": "fea4ba73-b807-4bb1-a30f-c8ad5af05210"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "priority"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "62319389-4748-4e30-84b7-498c112ffe12",
+                    "leftValue": "={{ $json.score }}",
+                    "rightValue": 56,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gte"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "hot"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "64ef256c-dac6-47e5-b074-77c26d308ae9",
+                    "leftValue": "={{ $json.score }}",
+                    "rightValue": 30,
+                    "operator": {
+                      "type": "number",
+                      "operation": "gte"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "warm"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "ignoreCase": false
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        896,
+        -32
+      ],
+      "id": "43b2b314-eae2-4905-b4f4-22cd797c833a",
+      "name": "Classify Lead"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2d5b948b-ce2e-4b0f-8a09-9ff1d044878c",
+              "name": "classification",
+              "value": "priority",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1168,
+        -224
+      ],
+      "id": "460eae5c-1b8c-4f36-ae27-a646e8b5ec66",
+      "name": "Set Priority Classification"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "09e6776a-fac2-41e8-b78c-eca277deccf1",
+              "name": "classification",
+              "value": "hot",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1168,
+        -80
+      ],
+      "id": "cc8c617e-e13b-4d00-ad3a-83bfb73ac7b9",
+      "name": "Set Hot Classification"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a6e7c635-96a1-49a8-a0f2-6212bc856723",
+              "name": "classification",
+              "value": "warm",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1168,
+        64
+      ],
+      "id": "61fc948c-1ffa-4982-97b3-6c8a8aa5cfdc",
+      "name": "Set Warm Classification"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3a2edefe-cd04-432f-a982-c762f968b0a6",
+              "name": "classification",
+              "value": "standard",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1168,
+        208
+      ],
+      "id": "f0763fd9-7e2b-491b-a35d-7ddf1fbef7e5",
+      "name": "Set Standard Classification"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.urgency === \"emergency\" && $json.serviceType === \"major_plumbing\" }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    },
+                    "id": "c073d716-6b1f-44e2-96aa-b2ea0d648cf3"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Plumbing Emergency"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e480161b-ef98-4326-9581-685d264ae372",
+                    "leftValue": "={{ $json.urgency === \"emergency\" && $json.serviceType.startsWith(\"hvac_\") }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "HVAC Emergency"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "abeb8784-bff0-4511-8703-14c7eee14c2e",
+                    "leftValue": "={{ $json.propertyType === \"commercial\" }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Commercial Lead"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5bbe96d8-d48f-43b5-b146-cd17015d4669",
+                    "leftValue": "={{ $json.classification === \"hot\" }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Hot Lead"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1456,
+        0
+      ],
+      "id": "cd9d882a-ebd5-4fdd-99bc-4206cb4a1579",
+      "name": "Route Lead"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c563771b-d83b-406a-ba33-c53a9264d875",
+              "name": "routeTo",
+              "value": "plumbing_emergency_queue",
+              "type": "string"
+            },
+            {
+              "id": "b35f0122-b9c1-4951-b2da-28322fa87036",
+              "name": "routingRule",
+              "value": "PRIORITY_PLUMBING",
+              "type": "string"
+            },
+            {
+              "id": "6f1e1bc9-9391-407b-a120-361ca69ec376",
+              "name": "routingReason",
+              "value": "Priority plumbing lead",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1696,
+        -304
+      ],
+      "id": "f385c07c-74a8-421b-a374-e8b519e91601",
+      "name": "Set Plumbing Emergency Route"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "093e7f9c-e115-46d4-8043-c5657533ea42",
+              "name": "routeTo",
+              "value": "hvac_emergency_queue",
+              "type": "string"
+            },
+            {
+              "id": "d5ae9b52-5e3b-412a-a9fd-e7ac0a8e20e0",
+              "name": "routingRule",
+              "value": "PRIORITY_HVAC",
+              "type": "string"
+            },
+            {
+              "id": "57d2cdcd-7307-45af-a7a7-6b67379518ac",
+              "name": "routingReason",
+              "value": "Emergency HVAC service request",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1696,
+        -112
+      ],
+      "id": "51babae2-4015-44f5-ab3b-b085b288fc8d",
+      "name": "Set HVAC Emergency Route"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a25d9897-ea6c-472a-8b52-850aea0fbb3c",
+              "name": "routeTo",
+              "value": "commercial_services_team",
+              "type": "string"
+            },
+            {
+              "id": "65016088-71fd-42cf-aada-be5fc2547235",
+              "name": "routingRule",
+              "value": "COMMERCIAL_LEAD",
+              "type": "string"
+            },
+            {
+              "id": "227e0ec3-98c4-488d-bdf8-5536686aed5b",
+              "name": "routingReason",
+              "value": "Commercial property lead",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1696,
+        48
+      ],
+      "id": "12811b19-6ead-495a-95c1-950a4121d641",
+      "name": "Set Commercial Route"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "287be730-0b5d-4b0f-a031-55f6759c3b24",
+              "name": "routeTo",
+              "value": "priority_dispatch",
+              "type": "string"
+            },
+            {
+              "id": "9eafe318-e00a-44a1-867c-c4b62752ea34",
+              "name": "routingRule",
+              "value": "HOT_LEAD",
+              "type": "string"
+            },
+            {
+              "id": "1ef6ac26-5e98-41d6-a11e-9dc8bfc9a3b5",
+              "name": "routingReason",
+              "value": "High scoring lead",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1696,
+        192
+      ],
+      "id": "f4e3daea-598a-4a81-8fa7-d62f17e25bc6",
+      "name": "Set Hot Lead Route"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e68f186b-44db-405b-a30e-ee447850eac1",
+              "name": "routeTo",
+              "value": "standard_dispatch",
+              "type": "string"
+            },
+            {
+              "id": "3af2b6f3-7934-414f-9cb4-6e490abedd59",
+              "name": "routingRule",
+              "value": "STANDARD_LEAD",
+              "type": "string"
+            },
+            {
+              "id": "83a46d54-82bd-40ba-9c49-9fbce3a9a152",
+              "name": "routingReason",
+              "value": "Standard qualified lead",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1696,
+        368
+      ],
+      "id": "a033790f-b107-4dd9-bb88-920c5daf554a",
+      "name": "Set Standard Route"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "submissionId"
+            },
+            {
+              "name": "source"
+            },
+            {
+              "name": "name"
+            },
+            {
+              "name": "phone"
+            },
+            {
+              "name": "email"
+            },
+            {
+              "name": "serviceType"
+            },
+            {
+              "name": "urgency"
+            },
+            {
+              "name": "propertyType"
+            },
+            {
+              "name": "area"
+            },
+            {
+              "name": "message"
+            },
+            {
+              "name": "receivedAt"
+            },
+            {
+              "name": "correlationId"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        0
+      ],
+      "id": "d9dbb4cf-b16b-44e3-b3f8-4ee3bac038e2",
+      "name": "Receive Canonical Lead"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Load Scoring Rules": {
+      "main": [
+        [
+          {
+            "node": "Calculate Lead Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Lead Score": {
+      "main": [
+        [
+          {
+            "node": "Classify Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Lead": {
+      "main": [
+        [
+          {
+            "node": "Set Priority Classification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Hot Classification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Warm Classification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Standard Classification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Warm Classification": {
+      "main": [
+        [
+          {
+            "node": "Route Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Hot Classification": {
+      "main": [
+        [
+          {
+            "node": "Route Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Priority Classification": {
+      "main": [
+        [
+          {
+            "node": "Route Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Standard Classification": {
+      "main": [
+        [
+          {
+            "node": "Route Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Lead": {
+      "main": [
+        [
+          {
+            "node": "Set Plumbing Emergency Route",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set HVAC Emergency Route",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Commercial Route",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Hot Lead Route",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Standard Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set HVAC Emergency Route": {
+      "main": [
+        []
+      ]
+    },
+    "Set Plumbing Emergency Route": {
+      "main": [
+        []
+      ]
+    },
+    "Set Commercial Route": {
+      "main": [
+        []
+      ]
+    },
+    "Set Hot Lead Route": {
+      "main": [
+        []
+      ]
+    },
+    "Receive Canonical Lead": {
+      "main": [
+        [
+          {
+            "node": "Load Scoring Rules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "9040fb51-6100-4d43-a243-5e4902e5e5d3",
+  "meta": {
+    "instanceId": "0d454c8add7f29d742c87508631e80ec019c98ca1bd7dcc0062ee24a0081d035"
+  },
+  "nodeGroups": [],
+  "id": "LciclQLIlmlVocUz",
+  "tags": []
+}

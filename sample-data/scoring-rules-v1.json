@@ -1,0 +1,19 @@
+[
+  {"factor":"urgency","value":"emergency","score":35,"is_active":true,"version":"v1"},
+  {"factor":"urgency","value":"same_day","score":25,"is_active":true,"version":"v1"},
+  {"factor":"urgency","value":"within_48h","score":15,"is_active":true,"version":"v1"},
+  {"factor":"urgency","value":"quote_only","score":5,"is_active":true,"version":"v1"},
+
+  {"factor":"serviceType","value":"hvac_install","score":25,"is_active":true,"version":"v1"},
+  {"factor":"serviceType","value":"major_plumbing","score":20,"is_active":true,"version":"v1"},
+  {"factor":"serviceType","value":"hvac_repair","score":15,"is_active":true,"version":"v1"},
+  {"factor":"serviceType","value":"maintenance","score":5,"is_active":true,"version":"v1"},
+
+  {"factor":"propertyType","value":"commercial","score":20,"is_active":true,"version":"v1"},
+  {"factor":"propertyType","value":"residential","score":10,"is_active":true,"version":"v1"},
+
+  {"factor":"source","value":"referral","score":10,"is_active":true,"version":"v1"},
+  {"factor":"source","value":"website","score":5,"is_active":true,"version":"v1"},
+  {"factor":"source","value":"meta","score":5,"is_active":true,"version":"v1"},
+  {"factor":"source","value":"google_form","score":3,"is_active":true,"version":"v1"}
+]

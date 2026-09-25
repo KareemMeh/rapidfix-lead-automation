@@ -1,0 +1,1484 @@
+{
+  "name": "RapidFix Multi-Source Lead Intake",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "rapidfix-lead",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c227fcbb-d608-4f60-9f0d-49d5fa4005e3",
+      "name": "Receive Website Lead",
+      "webhookId": "56c5dd02-2329-40dc-9593-6527ed062c5d"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1KGGlb1jCx4uZkjPJSE9DxSfLvLvOfeYg2JIv0ez-VGY",
+          "mode": "list",
+          "cachedResultName": "RapidFix Lead Responses",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KGGlb1jCx4uZkjPJSE9DxSfLvLvOfeYg2JIv0ez-VGY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 375318856,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KGGlb1jCx4uZkjPJSE9DxSfLvLvOfeYg2JIv0ez-VGY/edit#gid=375318856"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        192
+      ],
+      "id": "bf1934c0-c193-4d3c-8e98-c7f27729267d",
+      "name": "Receive Google Form Lead",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "vgUTote0PhvDbU6l",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ab052a32-d3a0-45d2-8c43-b14984a51e10",
+              "name": "source",
+              "value": "website",
+              "type": "string"
+            },
+            {
+              "id": "927ebd26-79cf-435c-8cae-225fcd825241",
+              "name": "name",
+              "value": "={{ $json.body?.name ?? $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "c5909a89-5c37-440a-89ce-631ba9e0b0f9",
+              "name": "phone",
+              "value": "={{ $json.body?.phone ?? $json.phone }}",
+              "type": "string"
+            },
+            {
+              "id": "2ca04c34-3f9f-4261-9409-82dbabeccdd0",
+              "name": "email",
+              "value": "={{ $json.body?.email ?? $json.email }}",
+              "type": "string"
+            },
+            {
+              "id": "578cf63d-c561-405c-936d-a6b61dc60b5f",
+              "name": "serviceType",
+              "value": "={{ \n({\n    \"HVAC Installation\": \"hvac_install\",\n    \"HVAC Repair\": \"hvac_repair\",\n    \"Major Plumbing\": \"major_plumbing\",\n    \"Maintenance\": \"maintenance\"\n  })[$json.body?.serviceType ?? $json.serviceType ?? \"unKnown\"]\n}}",
+              "type": "string"
+            },
+            {
+              "id": "86fba5ce-30e5-47bc-b869-ba86e2429b71",
+              "name": "urgency",
+              "value": "={{   ({     \"Emergency\": \"emergency\",     \"Same Day\": \"same_day\",     \"Within 48 Hours\": \"within_48h\",     \"Quote Only\": \"quote_only\"   })[$json.body?.urgency ?? $json.urgency ?? \"unknown\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "2a31ba48-ad49-4cb0-a4cb-ae2a2bea67e5",
+              "name": "propertyType",
+              "value": "={{   ($json.body?.propertyType ?? $json.propertyType ?? \"\")     .toLowerCase() }}",
+              "type": "string"
+            },
+            {
+              "id": "3cc52f6a-679b-4b7d-9f79-7bd999eed97d",
+              "name": "area",
+              "value": "={{ $json.body?.area ?? $json.area }}",
+              "type": "string"
+            },
+            {
+              "id": "cf7f102c-e046-4681-93b5-7198bfb44cca",
+              "name": "submissionId",
+              "value": "={{ $json.body.submissionId ?? $json.sunmissionId }}",
+              "type": "string"
+            },
+            {
+              "id": "2d228e9b-66e8-4719-a56d-b365391a74f9",
+              "name": "message",
+              "value": "={{ $json.body?.message ?? $json.message }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        448,
+        0
+      ],
+      "id": "6b98dcdb-61e2-4e5c-9a02-afe90785455c",
+      "name": "Website Form Adapter"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "37439109-9321-43ed-a9c6-d4c795ab7735",
+              "name": "submissionId",
+              "value": "={{ \"google_form_\" + $json[\"Timestamp\"] + \"_\" + $json[\"Phone\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "e27b630c-5e85-4cb0-8492-2716eab3255b",
+              "name": "source",
+              "value": "google_form",
+              "type": "string"
+            },
+            {
+              "id": "bb920ae6-9751-487a-a202-79f2190312b0",
+              "name": "name",
+              "value": "={{ $json['Customer Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "622f19a7-5dd1-467f-943e-a78bfe9b3347",
+              "name": "phone",
+              "value": "={{ $json.Phone }}",
+              "type": "string"
+            },
+            {
+              "id": "2b402350-df6d-4753-b54b-d2757cd451bd",
+              "name": "email",
+              "value": "={{ $json.Email }}",
+              "type": "string"
+            },
+            {
+              "id": "42a2d8e5-0c36-43cb-a661-60d7a867ddc0",
+              "name": "serviceType",
+              "value": "={{   ({     \"HVAC Installation\": \"hvac_install\",     \"HVAC Repair\": \"hvac_repair\",     \"Major Plumbing\": \"major_plumbing\",     \"Maintenance\": \"maintenance\"   })[$json[\"Service Type\"]] ?? \"unknown\" }}",
+              "type": "string"
+            },
+            {
+              "id": "683d6164-e2b4-457d-8694-2840123e194a",
+              "name": "urgency",
+              "value": "={{   ({     \"Emergency\": \"emergency\",     \"Same Day\": \"same_day\",     \"Within 48 Hours\": \"within_48h\",     \"Quote Only\": \"quote_only\"   })[$json[\"Urgency\"]] ?? \"unknown\" }}",
+              "type": "string"
+            },
+            {
+              "id": "1aed48f9-6226-4ec3-af62-d547d589d9a9",
+              "name": "propertyTpe",
+              "value": "={{ ($json[\"Property Type\"] ?? \"\").toLowerCase() }}",
+              "type": "string"
+            },
+            {
+              "id": "5bdeeb8b-e487-46bf-b476-6c6c520e297b",
+              "name": "area",
+              "value": "={{ $json.Area }}",
+              "type": "string"
+            },
+            {
+              "id": "a170d435-9ddf-4f85-90ca-512a5c2cadde",
+              "name": "message",
+              "value": "={{ $json['Problem Description'] }}",
+              "type": "string"
+            },
+            {
+              "id": "4b712daa-8628-4a22-bdfe-5e73882e465b",
+              "name": "receivedAt",
+              "value": "={{ $json.Timestamp }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        448,
+        192
+      ],
+      "id": "08e49a11-130a-4123-8a66-6b9955081de2",
+      "name": "Google Form Adapter"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "eb63b002-d084-43ce-9e03-e6794ca2e41b",
+              "leftValue": "={{ $json.name.trim().length >= 2}}",
+              "rightValue": 2,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "04194bec-37a2-4430-adf1-8488db4e992b",
+              "leftValue": "={{ /^\\+?[0-9\\s\\-()]{7,20}$/.test(($json.phone ?? \"\").trim()) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "19ebc604-83a2-4e2d-9991-0b4e36cabd93",
+              "leftValue": "={{ /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(($json.email ?? \"\").trim()) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "663cc344-3b63-403c-a939-740758c88194",
+              "leftValue": "={{ ($json.message ?? \"\").trim().length >= 10 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        112
+      ],
+      "id": "f2698de7-cb18-4070-8f19-9850fa06650a",
+      "name": "Validate Lead Format"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "87b8a0a6-1e2e-4a22-91c5-0bc7ad9860d9",
+              "name": "correlationId",
+              "value": "={{ $execution.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        912,
+        96
+      ],
+      "id": "981fd8a3-e775-4807-85db-cf8152ffe413",
+      "name": "Add Processing Metadata"
+    },
+    {
+      "parameters": {
+        "operation": "rowExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "XOjsqOeRQLO8R3fE",
+          "mode": "list",
+          "cachedResultName": "processed_submissions",
+          "cachedResultUrl": "/projects/rurF5jkLGoYPPdmg/datatables/XOjsqOeRQLO8R3fE"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "submissionId",
+              "keyValue": "={{ $json.submissionId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1136,
+        -48
+      ],
+      "id": "3f0ef40c-947c-4997-ab5a-574a168bf4cf",
+      "name": "Check Submission Exists",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "XOjsqOeRQLO8R3fE",
+          "mode": "list",
+          "cachedResultName": "processed_submissions",
+          "cachedResultUrl": "/projects/rurF5jkLGoYPPdmg/datatables/XOjsqOeRQLO8R3fE"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "submissionId",
+              "keyValue": "={{ $json.submissionId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1136,
+        208
+      ],
+      "id": "021389cd-3c73-494d-b516-46a1c1107e7e",
+      "name": "Check Submission Does Not Exist",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "XOjsqOeRQLO8R3fE",
+          "mode": "list",
+          "cachedResultName": "processed_submissions",
+          "cachedResultUrl": "/projects/rurF5jkLGoYPPdmg/datatables/XOjsqOeRQLO8R3fE"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "submissionId": "={{$json.submissionId}}",
+            "source": "={{$json.source}}",
+            "correlationId": "={{$json.correlationId}}",
+            "processedAt": "={{$now}}",
+            "status": "processing"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "submissionId",
+              "displayName": "submissionId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "correlationId",
+              "displayName": "correlationId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "processedAt",
+              "displayName": "processedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1360,
+        208
+      ],
+      "id": "19454540-02dd-4716-84ca-11abcba47c0e",
+      "name": "Save New Submission"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a2f40fd9-3ea5-45d7-9efd-3531ee820f65",
+              "name": "processingStatus",
+              "value": "duplicate",
+              "type": "string"
+            },
+            {
+              "id": "883c0d00-b239-4607-830e-bb1dc7c9df34",
+              "name": "duplicateReason",
+              "value": "Submission already processed",
+              "type": "string"
+            },
+            {
+              "id": "86b976a7-ba8f-41d8-b98f-625f003fe6dd",
+              "name": "duplicateDetectedAt",
+              "value": "={{ $now }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1360,
+        -48
+      ],
+      "id": "06f5c75f-d28b-4c9c-b914-40c57865ee3d",
+      "name": "Mark As Duplicate"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "LciclQLIlmlVocUz",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/LciclQLIlmlVocUz",
+          "cachedResultName": "Lead Scoring Engine Lab"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "submissionId": "={{ $('Add Processing Metadata').item.json.submissionId }}",
+            "source": "={{ $('Add Processing Metadata').item.json.source }}",
+            "name": "={{ $('Add Processing Metadata').item.json.name }}",
+            "phone": "={{ $('Add Processing Metadata').item.json.phone }}",
+            "email": "={{ $('Add Processing Metadata').item.json.email }}",
+            "serviceType": "={{ $('Add Processing Metadata').item.json.serviceType }}",
+            "urgency": "={{ $('Add Processing Metadata').item.json.urgency }}",
+            "propertyType": "={{ $('Add Processing Metadata').item.json.propertyType }}",
+            "area": "={{ $('Add Processing Metadata').item.json.area }}",
+            "message": "={{ $('Add Processing Metadata').item.json.message }}",
+            "receivedAt": "={{ $now }}",
+            "correlationId": "={{ $('Add Processing Metadata').item.json.correlationId }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "submissionId",
+              "displayName": "submissionId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "serviceType",
+              "displayName": "serviceType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "urgency",
+              "displayName": "urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "propertyType",
+              "displayName": "propertyType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "area",
+              "displayName": "area",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "receivedAt",
+              "displayName": "receivedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "correlationId",
+              "displayName": "correlationId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1584,
+        208
+      ],
+      "id": "cc8ecb58-557f-4aef-9e80-6cb26ef637fc",
+      "name": "Call 'Lead Scoring Engine Lab'"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "email": "={{ $json.email }}",
+        "additionalFields": {
+          "customPropertiesUi": {
+            "customPropertiesValues": [
+              {
+                "property": "lead_source",
+                "value": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.source }}"
+              },
+              {
+                "property": "service_type",
+                "value": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.serviceType }}"
+              },
+              {
+                "property": "urgency",
+                "value": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.urgency }}"
+              },
+              {
+                "property": "lead_score",
+                "value": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.score }}"
+              },
+              {
+                "property": "lead_classification",
+                "value": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.classification }}"
+              },
+              {
+                "property": "dispatch_route",
+                "value": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.routeTo }}"
+              },
+              {
+                "property": "last_submission_id",
+                "value": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.submissionId }}"
+              },
+              {
+                "property": "routing_reason",
+                "value": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.routingReason }}"
+              }
+            ]
+          },
+          "firstName": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.name }}",
+          "phoneNumber": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.phone }}"
+        },
+        "options": {
+          "resolveData": false
+        }
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.2,
+      "position": [
+        1856,
+        208
+      ],
+      "id": "91ce777a-6902-433d-806d-2ba57e5d38c5",
+      "name": "Create or update a contact",
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "bNtu1oEqfRcuyQsg",
+          "name": "HubSpot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3c1713c8-872e-4b90-a3c3-c62e4e73a8d0",
+              "leftValue": "={{ $json.isNew }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2080,
+        208
+      ],
+      "id": "dc066045-05b6-4d73-92a4-ef7756784314",
+      "name": "CRM Action?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "97b641b0-46e8-47dc-a9cf-8761bcee32cf",
+              "name": "crmAction",
+              "value": "created",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2304,
+        112
+      ],
+      "id": "2f16d869-ae0c-4ad2-9d2d-708e037d7998",
+      "name": "Set CRM Action Created"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9f238e05-fcf8-4fb9-bf27-38b0998c391e",
+              "name": "crmAction",
+              "value": "updated",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2304,
+        304
+      ],
+      "id": "c04732e7-6859-49fd-bd92-8f3e838bca7d",
+      "name": "Set CRM Action Updated"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.email }}",
+        "subject": "RapidFix - We received your service request",
+        "emailType": "text",
+        "message": "=Hi {{ $(\"Call 'Lead Scoring Engine Lab'\").item.json.name }},  We’ve received your service request successfully.  Service: {{ $(\"Call 'Lead Scoring Engine Lab'\").item.json.serviceType }} Urgency: {{ $(\"Call 'Lead Scoring Engine Lab'\").item.json.urgency }} Area: {{ $(\"Call 'Lead Scoring Engine Lab'\").item.json.area }}  Our team will review your request and follow up shortly.  RapidFix Team",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        2704,
+        -96
+      ],
+      "id": "d10f1b24-7212-43d7-8b6e-5eaf60236231",
+      "name": "Send a message",
+      "webhookId": "57572521-9848-4501-b8e2-77100663d9b1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "PEzWZZOifjFp1c9f",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1KGGlb1jCx4uZkjPJSE9DxSfLvLvOfeYg2JIv0ez-VGY/edit?gid=596859393#gid=596859393",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 596859393,
+          "mode": "list",
+          "cachedResultName": "Lead Audit",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KGGlb1jCx4uZkjPJSE9DxSfLvLvOfeYg2JIv0ez-VGY/edit#gid=596859393"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Submission ID": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.submissionId }}",
+            "Correlation ID": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.correlationId }}",
+            "Source": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.source }}",
+            "Timestamp": "={{ $now }}",
+            "Name": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.name }}",
+            "Phone": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.phone }}",
+            "Email": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.email }}",
+            "Service Type": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.serviceType }}",
+            "Urgency": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.urgency }}",
+            "Score": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.score }}",
+            "Classification": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.classification }}",
+            "Route": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.routeTo }}",
+            "Overall Status": "completed",
+            "CRM Action": "={{ $('Send Customer Acknowledgement').item.json.crmAction }}",
+            "HubSpot Contact ID": "={{ $('Create or update a contact').item.json.vid }}",
+            "Email Status": "={{ $json.emailStatus }}",
+            "Slack Status": "={{ $json.slackStatus }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Submission ID",
+              "displayName": "Submission ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Correlation ID",
+              "displayName": "Correlation ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Service Type",
+              "displayName": "Service Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Urgency",
+              "displayName": "Urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Score",
+              "displayName": "Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Classification",
+              "displayName": "Classification",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Route",
+              "displayName": "Route",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "HubSpot Contact ID",
+              "displayName": "HubSpot Contact ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CRM Action",
+              "displayName": "CRM Action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email Status",
+              "displayName": "Email Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Slack Status",
+              "displayName": "Slack Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Overall Status",
+              "displayName": "Overall Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3632,
+        128
+      ],
+      "id": "86ab2446-d4da-4e96-a10a-37d685769770",
+      "name": "Append Audit Lead",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "XdKmGOcjH2T6yhfP",
+          "name": "Google Sheets - RapidFix Audit"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1926cb69-4761-4c1f-9098-dfab3ff45c80",
+              "leftValue": "={{ $('Call \\'Lead Scoring Engine Lab\\'').item.json.classification=== \"priority\" || $('Call \\'Lead Scoring Engine Lab\\'').item.json.classification === \"hot\" }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2768,
+        208
+      ],
+      "id": "874858dd-ee2c-4441-9150-2a5c12e0c3b7",
+      "name": "Should Send Slack Alert?"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C45EUBMNG",
+          "mode": "id"
+        },
+        "text": "=🚨 New {{ $(\"Call 'Lead Scoring Engine Lab'\").item.json.classification.toUpperCase() }} Lead  Customer: {{ $(\"Call 'Lead Scoring Engine Lab'\").item.json.name }} Phone: {{ $(\"Call 'Lead Scoring Engine Lab'\").item.json.phone }} Email: {{ $(\"Call 'Lead Scoring Engine Lab'\").item.json.email }}  Service: {{ $(\"Call 'Lead Scoring Engine Lab'\").item.json.serviceType }} Urgency: {{ $(\"Call 'Lead Scoring Engine Lab'\").item.json.urgency }} Property: {{ $(\"Call 'Lead Scoring Engine Lab'\").item.json.propertyType }} Area: {{ $(\"Call 'Lead Scoring Engine Lab'\").item.json.area }}  Score: {{ $(\"Call 'Lead Scoring Engine Lab'\").item.json.score }} Route: {{ $(\"Call 'Lead Scoring Engine Lab'\").item.json.routeTo }}  Reason: {{ $(\"Call 'Lead Scoring Engine Lab'\").item.json.routingReason }}  Submission ID: {{ $(\"Call 'Lead Scoring Engine Lab'\").item.json.submissionId }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        2976,
+        80
+      ],
+      "id": "54385ef2-8d34-4a07-aa61-bcc8f82f8435",
+      "name": "Send Urgent Lead Alert",
+      "webhookId": "09871bf8-8903-440a-a83f-0f639d42cd04",
+      "credentials": {
+        "slackApi": {
+          "id": "pdAIqJPRpxUdjSDP",
+          "name": "Slack Bot - RapidFix"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "56b13744-7df9-4dff-a5cf-28a7cf60e06f",
+              "name": "emailStatus",
+              "value": "sent",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2976,
+        -112
+      ],
+      "id": "e2548b7e-7064-4c48-a539-8d3ef9101f8c",
+      "name": "Set Email Status Sent"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4f7ff94f-7fca-4a42-a282-e41a2f53e618",
+              "name": "slackStatus",
+              "value": "sent",
+              "type": "string"
+            },
+            {
+              "id": "59280bfd-e0ee-4ece-8ac7-8ff520c2e9c1",
+              "name": "emailStatus",
+              "value": "sent",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        3168,
+        80
+      ],
+      "id": "d0d7b640-07bd-4a98-9769-71584653c8ca",
+      "name": "Set Slack Status Sent"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7500b271-a1c9-4aa4-afb4-464d37b430ee",
+              "name": "slackStatus",
+              "value": "not_required",
+              "type": "string"
+            },
+            {
+              "id": "60f5e11b-e349-4179-ba88-e4b53f423bf5",
+              "name": "emailStatus",
+              "value": "sent",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2976,
+        288
+      ],
+      "id": "918cee65-0d4f-40e5-8e08-b0d44850bb90",
+      "name": "Set Slack Status Not Required"
+    },
+    {
+      "parameters": {
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2512,
+        208
+      ],
+      "id": "bbb1e17b-5acc-4479-ae73-58cafc2a65df",
+      "name": "Send Customer Acknowledgement"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Receive Website Lead": {
+      "main": [
+        [
+          {
+            "node": "Website Form Adapter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive Google Form Lead": {
+      "main": [
+        [
+          {
+            "node": "Google Form Adapter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Form Adapter": {
+      "main": [
+        [
+          {
+            "node": "Validate Lead Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Website Form Adapter": {
+      "main": [
+        [
+          {
+            "node": "Validate Lead Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Lead Format": {
+      "main": [
+        [
+          {
+            "node": "Add Processing Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Processing Metadata": {
+      "main": [
+        [
+          {
+            "node": "Check Submission Exists",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Check Submission Does Not Exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Submission Exists": {
+      "main": [
+        [
+          {
+            "node": "Mark As Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Submission Does Not Exist": {
+      "main": [
+        [
+          {
+            "node": "Save New Submission",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save New Submission": {
+      "main": [
+        [
+          {
+            "node": "Call 'Lead Scoring Engine Lab'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Lead Scoring Engine Lab'": {
+      "main": [
+        [
+          {
+            "node": "Create or update a contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create or update a contact": {
+      "main": [
+        [
+          {
+            "node": "CRM Action?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM Action?": {
+      "main": [
+        [
+          {
+            "node": "Set CRM Action Created",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set CRM Action Updated",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set CRM Action Created": {
+      "main": [
+        [
+          {
+            "node": "Send Customer Acknowledgement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set CRM Action Updated": {
+      "main": [
+        [
+          {
+            "node": "Send Customer Acknowledgement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Audit Lead": {
+      "main": [
+        []
+      ]
+    },
+    "Should Send Slack Alert?": {
+      "main": [
+        [
+          {
+            "node": "Send Urgent Lead Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Slack Status Not Required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Set Email Status Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Urgent Lead Alert": {
+      "main": [
+        [
+          {
+            "node": "Set Slack Status Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Slack Status Sent": {
+      "main": [
+        [
+          {
+            "node": "Append Audit Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Slack Status Not Required": {
+      "main": [
+        [
+          {
+            "node": "Append Audit Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Email Status Sent": {
+      "main": [
+        [
+          {
+            "node": "Append Audit Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Customer Acknowledgement": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Should Send Slack Alert?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "cf9d89b0-1f55-4044-8324-203daaaa6279",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0d454c8add7f29d742c87508631e80ec019c98ca1bd7dcc0062ee24a0081d035"
+  },
+  "nodeGroups": [],
+  "id": "Msi1U2Kjg3LOgnUK",
+  "tags": []
+}
