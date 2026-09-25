@@ -121,3 +121,23 @@ rapidfix-lead-automation/
 ├── screenshots/
 ├── .gitignore
 └── README.md
+
+## Screenshots
+
+### Main Workflow
+![Main Workflow](screenshots/rapidfix-main-workflow.png)
+
+### Website Lead Form
+![Website Form](screenshots/website-form.png)
+
+### Google Form Source
+![Google Form](screenshots/google-form.png)
+
+### Lead Scoring Engine
+![Lead Scoring Engine](screenshots/lead-scoring-engine.png)
+
+### Slack Alert
+![Slack Channel](screenshots/slack-channel.png)
+
+### Audit Log
+![Audit Log](screenshots/audit-log.png)
