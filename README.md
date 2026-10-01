@@ -1,155 +1,292 @@
 # RapidFix Lead Automation
 
-Production-minded multi-source lead intake and routing automation built with n8n.
+Production-style lead automation built with **n8n**, combining multi-source lead intake, validation, deduplication, rule-based decisioning, AI-assisted analysis, CRM synchronization, notifications, audit logging, and reliability patterns.
 
-## Overview
+Built as a portfolio project to demonstrate real-world automation architecture, API integrations, AI-assisted decisioning, and failure-handling strategies.
 
-RapidFix Lead Automation captures leads from multiple sources, normalizes the data into a canonical structure, validates submissions, prevents duplicate processing, scores and classifies leads, routes them based on business rules, syncs contacts with HubSpot, sends customer acknowledgements, sends internal Slack alerts, and records business audit data in Google Sheets.
+---
 
-## Current Lead Sources
+## Project Evolution
 
-- Website Form
-- Google Form
-- Meta Lead Ads planned
+RapidFix was developed in two major versions.
 
-## Integrations
+### V1 — Rules-Based Automation
 
-- n8n
-- HubSpot CRM
-- Google Sheets
-- Gmail
-- Slack
+The first version focused on deterministic lead processing and business rules.
 
-## Core Workflow
+Main capabilities:
 
-Lead Source  
-→ Source Adapter  
-→ Canonical Lead Model  
-→ Format Validation  
-→ Idempotency Check  
-→ Lead Scoring  
-→ Lead Classification  
-→ Routing  
-→ HubSpot CRM Sync  
-→ Customer Email  
-→ Slack Alert  
-→ Google Sheets Audit
+- Multi-source lead intake
+- Canonical lead normalization
+- Input validation
+- Deduplication / idempotency
+- Rule-based lead scoring
+- Lead classification
+- Business-rule routing
+- HubSpot CRM synchronization
+- Gmail notifications
+- Slack alerts
+- Google Sheets audit logging
 
-## Lead Scoring
+---
 
-Lead scoring is configuration-driven using an n8n Data Table.
+### V2 — AI-Assisted Hybrid Automation
 
-Factors currently include:
+V2 extends the original rules-based system with AI-assisted interpretation while keeping business decisions deterministic and auditable.
 
-- Urgency
-- Service Type
-- Property Type
-- Lead Source
+Main additions:
 
-Scoring rules are versioned and stored separately from workflow logic.
+- AI analysis of free-text lead messages
+- Structured AI signals
+- AI output validation
+- Confidence-based fallback
+- Hybrid AI + rule-based scoring
+- Effective urgency resolution
+- Improved final classification
+- Improved routing logic
+- Retry logic for external integrations
+- Explicit failure branches
+- Dead-Letter Queue pattern
+- Integration recovery workflow
+- Improved auditability
 
-## Routing Rules
+---
 
-Routing uses first-match priority logic.
-
-Current routing order:
-
-1. Emergency Major Plumbing → Plumbing Emergency Queue
-2. Emergency HVAC → HVAC Emergency Queue
-3. Commercial Property → Commercial Services Team
-4. Hot Lead → Priority Dispatch
-5. Fallback → Standard Dispatch
-
-## Idempotency
-
-Each source generates a stable submission ID.
-
-The `processed_submissions` Data Table is used to prevent the same submission from being processed multiple times.
-
-## CRM
-
-HubSpot is used as the CRM source of truth.
-
-Contacts are created or updated using email identity.
-
-Custom properties include:
-
-- Lead Source
-- Service Type
-- Urgency
-- Lead Score
-- Lead Classification
-- Dispatch Route
-- Last Submission ID
-- Routing Reason
-
-## Notifications
-
-Customer acknowledgement emails are sent using Gmail.
-
-Priority and hot leads can trigger Slack alerts for internal dispatch teams.
-
-## Audit
-
-Google Sheets records business-level processing results including:
-
-- Submission ID
-- Correlation ID
-- Source
-- Customer
-- Score
-- Classification
-- Route
-- HubSpot Contact ID
-- CRM Action
-- CRM Status
-- Email Status
-- Slack Status
-- Overall Status
-
-## Repository Structure
+## Architecture
 
 ```text
-rapidfix-lead-automation/
-├── workflows/
-│   ├── RapidFix Multi-Source Lead Intake.json
-│   └── Lead Scoring Engine Lab.json
-├── docs/
-│   └── data-tables.md
-├── sample-data/
-│   └── scoring-rules-v1.json
-├── screenshots/
-├── .gitignore
-└── README.md
+Lead Sources
+   │
+   ├── Website Form
+   ├── Google Form
+   └── Other / API Sources
+            │
+            ▼
+      Source Adapters
+            │
+            ▼
+      Canonical Lead Model
+            │
+            ▼
+        Validation
+            │
+            ▼
+ Deduplication / Idempotency
+            │
+            ▼
+      Rule-Based Scoring
+            │
+            ├──────────────┐
+            │              │
+            ▼              ▼
+      AI Analysis      AI Failure
+            │              │
+            ▼              │
+     Validate AI Output    │
+            │              │
+            ▼              │
+      Confidence Check     │
+            │              │
+            ▼              │
+      Hybrid Scoring       │
+            │              │
+            └──────┬───────┘
+                   ▼
+          Rules-Only Fallback
+            when required
+                   │
+                   ▼
+         Final Classification
+                   │
+                   ▼
+             Final Routing
+                   │
+        ┌──────────┼──────────┐
+        ▼          ▼          ▼
+     HubSpot     Gmail      Slack
+        │          │          │
+        └──────────┴──────────┘
+                   │
+                   ▼
+              Audit Logging
+                   │
+                   ▼
+        Retry / Failure Handling
+                   │
+                   ▼
+         Dead-Letter Queue
+```
 
-## Screenshots
+## Core Design Principle
 
-### Main Workflow
-![Main Workflow](screenshots/rapidfix-main-workflow.png)
+AI interprets ambiguity. Code calculates. Rules decide. Humans handle uncertainty.
 
-### Website Lead Form
-![Website Form](screenshots/website-form.png)
+RapidFix does not allow the AI model to become the only decision-maker.
+AI is used to interpret ambiguous free-text signals, while deterministic code and business rules remain responsible for scoring, classification, and routing.
+If AI analysis fails, returns invalid output, or does not meet the required confidence level, the workflow falls back to the original rule engine.
+AI-Assisted Decisioning
+V2 analyzes signals such as:
 
-### Google Form Source
-![Google Form](screenshots/google-form.png)
+- Purchase intent
+- Business impact
+- Specificity
+- Urgency inferred from the message
+- AI confidence
+- AI summary
+- AI reasoning
+  These signals are converted into a structured AI score and combined with the existing rule score.
+  Example:
+  Rule Score
 
-### Lead Scoring Engine
-![Lead Scoring Engine](screenshots/lead-scoring-engine.png)
+* # AI Signal Score
+  Hybrid Score
 
-### Slack Alert
-![Slack Channel](screenshots/slack-channel.png)
+The hybrid score is then used to calculate the final lead classification.
+Lead Routing
+Routing decisions are based on explicit business rules.
+Examples include:
+Emergency + Major Plumbing
+→ Plumbing Emergency Queue
 
-### Audit Log
-![Audit Log](screenshots/audit-log.png)
+Emergency + HVAC
+→ HVAC Emergency Queue
 
-## Demo Flow
+Commercial Property
+→ Commercial Services Team
 
-1. Lead submits Website or Google Form
-2. Lead is normalized into a canonical format
-3. Duplicate submissions are blocked
-4. Lead is scored and classified
-5. Routing rules assign the correct dispatch queue
-6. HubSpot contact is created or updated
-7. Customer receives confirmation email
-8. Priority leads trigger Slack alerts
-9. Processing result is written to Google Sheets
+Priority Lead
+→ Priority Dispatch
+
+Fallback
+→ Standard Dispatch
+
+This keeps routing logic inspectable and predictable.
+Reliability Design
+RapidFix V2 includes production-minded reliability patterns.
+Local Retry
+External integrations use bounded retry logic for temporary failures such as:
+
+- API timeouts
+- Rate limits
+- Temporary provider outages
+- Network errors
+  Explicit Failure Paths
+  Handled integration failures produce structured status fields instead of silently failing.
+  Examples:
+  crmStatus
+  emailStatus
+  slackStatus
+
+AI Fallback
+AI failure does not stop lead processing.
+AI Technical Failure
+↓
+Rules-Only Decision
+
+Dead-Letter Queue
+Failed integration operations can be stored in a Dead-Letter Queue after retries are exhausted.
+A dedicated retry workflow can later retry only the failed operation instead of replaying the entire lead workflow.
+This reduces the risk of duplicate CRM updates, duplicate emails, or repeated notifications.
+Integrations
+RapidFix demonstrates integration with:
+
+- HubSpot CRM
+- Gmail
+- Slack
+- Google Sheets
+- Gemini / LLM API
+- REST APIs
+- Webhooks
+  Technology Stack
+- n8n
+- REST APIs
+- Webhooks
+- HTTP
+- JSON
+- JavaScript expressions
+- HubSpot CRM
+- Gmail
+- Slack
+- Google Sheets
+- Gemini / LLM integration
+- Git
+- GitHub
+  Repository Structure
+  rapidfix-lead-automation/
+  │
+  ├── workflows/
+  │ ├── v1/
+  │ └── v2/
+  │
+  ├── docs/
+  │
+  ├── sample-data/
+  │
+  ├── screenshots/
+  │
+  ├── demo/
+  │
+  ├── .gitignore
+  │
+  └── README.md
+
+Workflow Files
+V1
+Located in:
+workflows/v1/
+
+Contains the original rules-based lead automation and scoring workflows.
+V2
+Located in:
+workflows/v2/
+
+Contains:
+
+- RapidFix AI V2 main workflow
+- DLQ Retry Worker
+  Screenshots
+  RapidFix V2
+  Workflow Overview
+
+AI Analysis and Hybrid Decisioning
+
+Routing and Integrations
+
+Reliability and Error Handling
+
+Test Scenarios
+RapidFix is designed to test scenarios such as:
+
+- Valid lead with successful AI analysis
+- AI technical failure
+- Invalid AI output
+- Low AI confidence
+- Duplicate lead
+- Emergency plumbing lead
+- Emergency HVAC lead
+- Commercial lead
+- HubSpot failure
+- Gmail failure
+- Slack failure
+- Retry exhaustion
+- DLQ creation
+  Security
+  This repository is a portfolio project.
+  Before publishing workflow exports, sensitive information should be removed or replaced.
+  Do not commit:
+- API keys
+- OAuth tokens
+- Passwords
+- Real customer PII
+- Private webhook URLs
+- Production credentials
+- Private CRM data
+  Anyone importing the workflow should create and configure their own credentials.
+  Project Status
+  Portfolio / production-style automation project
+  RapidFix demonstrates production-oriented architecture and reliability patterns, but it is presented as a portfolio project rather than a live client deployment.
+  Author
+  Kareem Mehaisen
+  Automation & Integration Engineer
+- GitHub: https://github.com/KareemMeh
+- LinkedIn: https://www.linkedin.com/in/kareem-mehaisen-46a186217

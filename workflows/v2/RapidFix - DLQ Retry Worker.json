@@ -1,0 +1,675 @@
+{
+  "name": "RapidFix - DLQ Retry Worker",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "54201394-07a2-45a4-b718-e8718d2008b2",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "QWH4yBa2GbzqBBnE",
+          "mode": "list",
+          "cachedResultName": "integration_dlq",
+          "cachedResultUrl": "/projects/rurF5jkLGoYPPdmg/datatables/QWH4yBa2GbzqBBnE"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "keyValue": "pending"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "89f19462-6dc5-4600-8b59-40b24f8c79e8",
+      "name": "Get Pending DLQ Items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "99a54c80-8a04-4b60-83ce-601c99d54d82",
+              "leftValue": "={{ Number($json.attempts) < Number($json.maxAttempts) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "d59ebf70-8459-4e4b-aa58-69c06fb21503",
+      "name": "Retry Allowed?"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.operation }}",
+                    "rightValue": "hubspot_sync",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "603abebf-2b3c-4cd5-b6d5-f06f940a2ff6"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "hubspot_sync"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "167ddf93-7662-4216-94f8-4c9ce42fcadc",
+      "name": "Switch Operation"
+    },
+    {
+      "parameters": {
+        "jsCode": "const payload =\n  typeof $json.payload === \"string\"\n    ? JSON.parse($json.payload)\n    : $json.payload;\n\nreturn {\n  ...$json,\n  payload,\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -96
+      ],
+      "id": "eff867bc-1c95-480c-9604-fcb785a8f5db",
+      "name": "Parse DLQ Payload"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "email": "={{ $json.payload.email }}",
+        "additionalFields": {
+          "customPropertiesUi": {
+            "customPropertiesValues": [
+              {
+                "property": "lead_source",
+                "value": "={{ $json.payload.source }}"
+              },
+              {
+                "property": "service_type",
+                "value": "={{ $json.payload.serviceType }}"
+              },
+              {
+                "property": "urgency",
+                "value": "={{ $json.payload.urgency }}"
+              },
+              {
+                "property": "lead_classification",
+                "value": "={{ $json.payload.finalClassification }}"
+              },
+              {
+                "property": "dispatch_route",
+                "value": "={{ $json.payload.finalRoute }}"
+              },
+              {
+                "property": "last_submission_id",
+                "value": "={{ $json.submissionId }}"
+              }
+            ]
+          },
+          "firstName": "={{ $json.payload.name }}",
+          "phoneNumber": "={{ $json.payload.phone }}"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        -96
+      ],
+      "id": "950f7082-10c9-4e1b-8437-d441e89288ae",
+      "name": "Retry HubSpot Sync",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "hubspotOAuth2Api": {
+          "id": "bNtu1oEqfRcuyQsg",
+          "name": "HubSpot account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "edefcb54-c75a-4f2e-a23b-3ca1cc486dca",
+              "name": "status",
+              "value": "resolved",
+              "type": "string"
+            },
+            {
+              "id": "11d0b7eb-dcd0-4e39-b5d4-01a4b9565dfc",
+              "name": "resolvedAt",
+              "value": "= {{ $now }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1344,
+        -192
+      ],
+      "id": "03a267c8-3f04-4dbf-8237-535f5d61707e",
+      "name": "Mark DLQ Resolved"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "665cfb26-14fe-47c7-9a43-020dd8a7c27a",
+              "name": "attempts",
+              "value": "={{ Number($json.attempts ?? 0) + 1 }}",
+              "type": "string"
+            },
+            {
+              "id": "f71c1fac-3345-4e07-b9b3-f150a4712a93",
+              "name": "lastAttemptAt",
+              "value": "={{ $now }}",
+              "type": "string"
+            },
+            {
+              "id": "f7e7b703-b782-4b7e-b167-ef95e25be7e3",
+              "name": "errorMessage",
+              "value": "={{ $json.error?.message ?? $json.message ?? \"HubSpot retry failed\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1344,
+        0
+      ],
+      "id": "e4c8de6a-1236-4b8a-8be1-14f37f03a26e",
+      "name": "Prepare DLQ Retry Failure"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "QWH4yBa2GbzqBBnE",
+          "mode": "list",
+          "cachedResultName": "integration_dlq",
+          "cachedResultUrl": "/projects/rurF5jkLGoYPPdmg/datatables/QWH4yBa2GbzqBBnE"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "attempts": "={{ $json.attempts }}",
+            "errorMessage": "={{ $json.errorMessage }}",
+            "status": "={{ Number($json.attempts) >= Number($json.maxAttempts) ? \"dead\" : \"pending\" }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "submissionId",
+              "displayName": "submissionId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "correlationId",
+              "displayName": "correlationId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "operation",
+              "displayName": "operation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "payload",
+              "displayName": "payload",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "errorMessage",
+              "displayName": "errorMessage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "attempts",
+              "displayName": "attempts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "maxAttempts",
+              "displayName": "maxAttempts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "lastAttemptAt",
+              "displayName": "lastAttemptAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "nextRetryAt",
+              "displayName": "nextRetryAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "resolvedAt",
+              "displayName": "resolvedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1568,
+        0
+      ],
+      "id": "1fa9e8b1-1d4e-444d-a224-988490206473",
+      "name": "Update DLQ Retry Failure"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "QWH4yBa2GbzqBBnE",
+          "mode": "list",
+          "cachedResultName": "integration_dlq",
+          "cachedResultUrl": "/projects/rurF5jkLGoYPPdmg/datatables/QWH4yBa2GbzqBBnE"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "={{ $json.status }}",
+            "resolvedAt": "={{ $json.resolvedAt }}",
+            "lastAttemptAt": "={{ $now }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "submissionId",
+              "displayName": "submissionId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "correlationId",
+              "displayName": "correlationId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "operation",
+              "displayName": "operation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "payload",
+              "displayName": "payload",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "errorMessage",
+              "displayName": "errorMessage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "attempts",
+              "displayName": "attempts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "maxAttempts",
+              "displayName": "maxAttempts",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "lastAttemptAt",
+              "displayName": "lastAttemptAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "nextRetryAt",
+              "displayName": "nextRetryAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "resolvedAt",
+              "displayName": "resolvedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1568,
+        -192
+      ],
+      "id": "98e9719c-77eb-4efe-ad09-d7564a3eb334",
+      "name": "Update DLQ Resolved"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Pending DLQ Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Pending DLQ Items": {
+      "main": [
+        [
+          {
+            "node": "Retry Allowed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retry Allowed?": {
+      "main": [
+        [
+          {
+            "node": "Switch Operation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Operation": {
+      "main": [
+        [
+          {
+            "node": "Parse DLQ Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse DLQ Payload": {
+      "main": [
+        [
+          {
+            "node": "Retry HubSpot Sync",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retry HubSpot Sync": {
+      "main": [
+        [
+          {
+            "node": "Mark DLQ Resolved",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare DLQ Retry Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark DLQ Resolved": {
+      "main": [
+        [
+          {
+            "node": "Update DLQ Resolved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare DLQ Retry Failure": {
+      "main": [
+        [
+          {
+            "node": "Update DLQ Retry Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "c041cf79-6cd9-41d3-a9bd-8e18dfdc2279",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "0d454c8add7f29d742c87508631e80ec019c98ca1bd7dcc0062ee24a0081d035"
+  },
+  "nodeGroups": [],
+  "id": "1SvoUnPSwe1E9nz8",
+  "tags": []
+}
